@@ -9,47 +9,41 @@ import (
 )
 
 var testCases = []struct {
-	inputHeader      []byte
+	inputHeader      [2]byte
 	inputData        []byte
 	expectedChecksum byte
 	expectedLength   int
 }{
 	{
-		inputHeader:      []byte{'L', 'D'},
+		inputHeader:      [2]byte{'L', 'D'},
 		inputData:        []byte{},
 		expectedChecksum: 0x00,
 	},
 	{
-		inputHeader:      []byte{'L', 'D'},
+		inputHeader:      [2]byte{'L', 'D'},
 		inputData:        []byte{'A'},
 		expectedChecksum: 0x40,
 	},
 	{
-		inputHeader:      []byte{'L', 'D'},
+		inputHeader:      [2]byte{'L', 'D'},
 		inputData:        []byte{'t', 'e', 's', 't'},
 		expectedChecksum: 0x12,
 	},
 	{
-		inputHeader:      []byte{'L', 'D'},
+		inputHeader:      [2]byte{'L', 'D'},
 		inputData:        []byte{'d', 'u', 'p', 'c', 'i', 'a'},
 		expectedChecksum: 0x0c,
 	},
 	{
-		inputHeader:      []byte{'L', 'D'},
+		inputHeader:      [2]byte{'L', 'D'},
 		inputData:        []byte{'l', 'o', 'l', 'x', 'd'},
 		expectedChecksum: 0x76,
 	},
 	{
-		inputHeader:      []byte{'M', 'T'},
+		inputHeader:      [2]byte{'M', 'T'},
 		inputData:        []byte{'d', 'o', 'n', 'd', 'u'},
 		expectedChecksum: 0x60,
 	},
-	// Invalid: header must always be 2 bytes length, data equal or more than 1 byte
-	// {
-	// 	inputHeader:      []byte{},
-	// 	inputData:        []byte{},
-	// 	expectedChecksum: 0x08,
-	// },
 }
 
 func TestCreate(t *testing.T) {
@@ -58,7 +52,7 @@ func TestCreate(t *testing.T) {
 		t.Run(testName, func(t *testing.T) {
 			gotFrame := frames.Create(tc.inputHeader, tc.inputData)
 
-			if !bytes.Equal(gotFrame.Header(), tc.inputHeader) {
+			if !bytes.Equal(gotFrame.Header(), tc.inputHeader[:]) {
 				t.Errorf("got header % x, want header % x", gotFrame.Header(), tc.inputHeader)
 			}
 
@@ -83,7 +77,7 @@ func TestAssemble(t *testing.T) {
 		t.Run(testName, func(t *testing.T) {
 			gotFrame := frames.Assemble(tc.inputHeader, byte(len(tc.inputData)), tc.inputData, tc.expectedChecksum)
 
-			if !bytes.Equal(gotFrame.Header(), tc.inputHeader) {
+			if !bytes.Equal(gotFrame.Header(), tc.inputHeader[:]) {
 				t.Errorf("got header % x, want header % x", gotFrame.Header(), tc.inputHeader)
 			}
 
