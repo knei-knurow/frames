@@ -79,15 +79,22 @@ func Assemble(header [2]byte, length byte, data []byte, checksum byte) (frame Fr
 
 // Verify checks whether the frame is valid (i.e of correct format).
 //
-// The frame has to:
+// The frame must:
 //
-// - start with 2 byte header ASCII-only uppercase header
-// - have a plus sign ("+") 4th position
+// - start with 2 byte uppercase ASCII header
 //
-// - have a hash sign ("#") at penultimate position
+// - at 3rd position (2nd index): have a length byte that is equal to the length of data
+//
+// - at 4th position (3rd index): have a plus sign ("+")
+//
+// - at penultimate position: have a hash sign ("#")
 //
 // - its checksum must be correct
 func Verify(frame Frame) bool {
+	if frame[2] != byte(frame.LenData()) {
+		return false
+	}
+
 	if frame[3] != '+' {
 		return false
 	}
