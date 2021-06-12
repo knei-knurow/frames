@@ -13,7 +13,13 @@ import "fmt"
 // Data is terminated with a hash sign ("#").
 // The last byte is a simple 8-bit CRC checksum.
 //
-// Example frame (H = header byte, D = data byte, C = CRC byte):
+// Some example frames (H = header byte, D = data byte, C = CRC byte):
+//
+// HH4+DDDDD#C
+//
+// LD5+DDDDD#C
+//
+// XD7+DDDDDDD#C
 type Frame []byte
 
 // Header returns frame's header. It is always 2 bytes.
