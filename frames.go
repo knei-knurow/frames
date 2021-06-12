@@ -15,7 +15,7 @@ import "fmt"
 //
 // Some example frames (H = header byte, D = data byte, C = CRC byte):
 //
-// HH4+DDDDD#C
+// HH4+DDDD#C
 //
 // LD5+DDDDD#C
 //
