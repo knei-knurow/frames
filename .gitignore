@@ -1,4 +1,6 @@
-.vscode/
+# editors
 .idea/
+.vscode/
+
+# misc files
 .DS_Store
-*.exe
