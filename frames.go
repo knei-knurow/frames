@@ -49,7 +49,7 @@ func (f Frame) Checksum() byte {
 
 // Create creates a new frame.
 // The frame starts with header and contains data.
-// It also calculates the checksum using frames.CalculateChecksum.
+// Create also calculates the checksum using CalculateChecksum.
 // Data length must not overflow byte.
 func Create(header [2]byte, data []byte) (frame Frame) {
 	frame = make(Frame, len(header)+1+1+len(data)+2)
@@ -63,7 +63,19 @@ func Create(header [2]byte, data []byte) (frame Frame) {
 	return
 }
 
+// Recreate creates a new frame from already available byte buffer.
+// It does not check whether buf represents a correct frame.
+// To check if the newly created frame is correct, use Verify function.
+// Data length must not overflow byte.
+func Recreate(buf []byte) (frame Frame) {
+	frame = make(Frame, len(buf))
+	copy(frame[:], buf[:])
+	return
+}
+
 // Assemble creates a frame from already available values.
+//
+// Deprecated: you should probably just use Recreate.
 func Assemble(header [2]byte, length byte, data []byte, checksum byte) (frame Frame) {
 	frame = make(Frame, len(header)+1+1+len(data)+2)
 
