@@ -104,3 +104,17 @@ func TestVerify(t *testing.T) {
 		})
 	}
 }
+
+func TestRecreate(t *testing.T) {
+	for i, tc := range testCases {
+		testName := fmt.Sprintf("test %d", i)
+		t.Run(testName, func(t *testing.T) {
+			gotFrame := frames.Create(tc.inputHeader, tc.inputData)
+			recreatedFrame := frames.Recreate(gotFrame[:])
+
+			if !bytes.Equal(gotFrame, recreatedFrame) {
+				t.Error("frame recreation failed")
+			}
+		})
+	}
+}
