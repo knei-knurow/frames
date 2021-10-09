@@ -105,13 +105,13 @@ func Assemble(header [2]byte, length byte, data []byte, checksum byte) (frame Fr
 // - at last position: a checksum must be correct
 func Verify(frame Frame) bool {
 	first := frame[0]
-	valid1 := (first > 'A' && first < 'Z') || (first > '0' && first < '9')
+	valid1 := (first >= 'A' && first <= 'Z') || (first >= '0' && first <= '9')
 	if !valid1 {
 		return false
 	}
 
 	second := frame[1]
-	valid2 := (second > 'A' && second < 'Z') || (second > '0' && second < '9')
+	valid2 := (second >= 'A' && second <= 'Z') || (second >= '0' && second <= '9')
 	if !valid2 {
 		return false
 	}
@@ -135,7 +135,8 @@ func Verify(frame Frame) bool {
 // CalculateChecksum calculates the simple CRC checksum of frame.
 //
 // It takes all frame's bytes into account, except the last byte, because
-// the last byte is the checksum itself.
+// the last byte is the checksum itself. It does not check whether the frame
+// is correct.
 func CalculateChecksum(frame Frame) (crc byte) {
 	crc = frame[0]
 	for i := 1; i < len(frame)-1; i++ {
