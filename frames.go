@@ -22,27 +22,32 @@ import "fmt"
 // XD7+DDDDDDD#C
 type Frame []byte
 
-// Header returns frame's header. It is always 2 bytes.
+// Header returns frame's header, i.e the first 2 bytes.
+//
+// If the frame is invalid, it may return a slice of any length.
 func (f Frame) Header() []byte {
 	return f[:2]
 }
 
-// LenData returns the length of frame's data in bytes.
+// LenData returns the length of frame's data in bytes, i.e the third byte.
+//
+// If the third byte "lies" about the frame's length, then this function will
+// return that invalid value.
 func (f Frame) LenData() int {
 	return int(f[2])
 }
 
-// Data returns frame's data part from the first byte after a plus sign ("+") up
-// to the antepenultimate (last but one - 1) byte.
+// Data returns frame's data part from the first byte after a plus sign ("+")
+// up to the antepenultimate (last but one - 1) byte.
 func (f Frame) Data() []byte {
 	headerLength := len(f.Header())
 	begin := headerLength + 2 // example: LD4+DDDD : we want to start from D (so index 4)
-	end := begin + f.LenData()
+	end := len(f) - 2
 
 	return f[begin:end]
 }
 
-// Checksum returns frame's last byte - a simple CRC checksum.
+// Checksum returns frame's simple CRC checksum, i.e the last byte.
 func (f Frame) Checksum() byte {
 	return f[len(f)-1]
 }
@@ -104,6 +109,10 @@ func Assemble(header [2]byte, length byte, data []byte, checksum byte) (frame Fr
 //
 // - at last position: a checksum must be correct
 func Verify(frame Frame) bool {
+	if len(frame) < 6 {
+		return false
+	}
+
 	first := frame[0]
 	valid1 := (first >= 'A' && first <= 'Z') || (first >= '0' && first <= '9')
 	if !valid1 {
@@ -117,6 +126,10 @@ func Verify(frame Frame) bool {
 	}
 
 	if frame[2] != byte(frame.LenData()) {
+		return false
+	}
+
+	if frame.LenData() != len(frame.Data()) {
 		return false
 	}
 

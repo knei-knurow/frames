@@ -3,7 +3,6 @@ package frames_test
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/knei-knurow/frames"
@@ -20,7 +19,7 @@ var testCases = []struct {
 		inputHeader:      [2]byte{'L', 'D'},
 		inputData:        []byte{},
 		expectedChecksum: 0x00,
-		frame:            []byte{'L', 'D', '0', '+', '#', 0x00},
+		frame:            []byte{'L', 'D', 0x0, '+', '#', 0x00},
 	},
 	{
 		inputHeader:      [2]byte{'L', 'D'},
@@ -109,42 +108,68 @@ func TestVerify(t *testing.T) {
 		frame []byte
 		valid bool
 	}{
+		// the shortest possible frame (len=6)
 		{
-			frame: []byte{'L', 'D', '0', '+', '#', 0x00},
+			frame: []byte{'L', 'D', 0x0, '+', '#', 0x00},
 			valid: true,
 		},
 		{
-			frame: []byte{'L', 'D', '1', '+', 'A', '#', 0x40},
+			frame: []byte{'L', 'D', 0x1, '+', 'A', '#', 0x40},
 			valid: true,
 		},
 		{
-			frame: []byte{'L', 'D', '4', '+', 't', 'e', 's', 't', '#', 0x12},
+			frame: []byte{'L', 'D', 0x4, '+', 't', 'e', 's', 't', '#', 0x12},
 			valid: true,
 		},
 		{
-			frame: []byte{'L', 'D', '4', '+', 'd', 'u', 'p', 'c', 'i', 'a', '#', 0x0c},
+			frame: []byte{'L', 'D', 0x6, '+', 'd', 'u', 'p', 'c', 'i', 'a', '#', 0x0c},
 			valid: true,
 		},
 		{
-			frame: []byte{'L', 'D', '5', '+', 'l', 'o', 'l', 'x', 'd', '#', 0x76},
+			frame: []byte{'L', 'D', 0x5, '+', 'l', 'o', 'l', 'x', 'd', '#', 0x76},
 			valid: true,
 		},
 		{
-			frame: []byte{'M', 'T', '5', '+', 'd', 'o', 'n', 'd', 'u', '#', 0x60},
+			frame: []byte{'M', 'T', 0x5, '+', 'd', 'o', 'n', 'd', 'u', '#', 0x60},
 			valid: true,
+		},
+		// frame with 1 digit in the header
+		{
+			frame: []byte{'M', '1', 0x5, '+', 'd', 'i', 'g', 'i', 't', '#', 0x06},
+			valid: true,
+		},
+		// frame with 2 digits in the header
+		{
+			frame: []byte{'1', '2', 0x6, '+', 'd', 'i', 'g', 'i', 't', 's', '#', 0x09},
+			valid: true,
+		},
+		// nil frame
+		{
+			frame: nil,
+			valid: false,
+		},
+		// empty frame
+		{
+			frame: []byte{},
+			valid: false,
+		},
+		// too short frame
+		{
+			frame: []byte{'x', 'd'},
+			valid: false,
+		},
+		// frame with invalid length
+		{
+			frame: []byte{'M', 'T', 0x6, '+', 'd', 'o', 'n', 'd', 'u', '#', 0x63},
+			valid: false,
 		},
 	}
 
 	for i, tc := range verifyTestCases {
 		testName := fmt.Sprintf("test %d", i)
 		t.Run(testName, func(t *testing.T) {
-			testFrame := frames.Create(testCases[i].inputHeader, testCases[i].inputData)
-			log.Printf("now goes 'create' frame: %x, len: %d", testFrame, len(testFrame))
-			log.Printf("now goes 'verify' frame: %x, len: %d", tc.frame, len(tc.frame))
-			log.Print("tc: " + frames.DescribeByte(frames.CalculateChecksum(testFrame)))
-			log.Print("vtc: " + frames.DescribeByte(frames.CalculateChecksum(tc.frame)))
 			if frames.Verify(tc.frame) != tc.valid {
-				t.Errorf("frame verification failed")
+				t.Errorf("frame verification failed for %s", tc.frame)
 			}
 		})
 	}
