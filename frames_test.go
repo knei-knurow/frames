@@ -25,31 +25,31 @@ var testCases = []struct {
 		inputHeader:      [2]byte{'L', 'D'},
 		inputData:        []byte{'A'},
 		expectedChecksum: 0x40,
-		frame:            []byte{'L', 'D', '1', '+', 'A', '#', 0x40},
+		frame:            []byte{'L', 'D', 0x01, '+', 'A', '#', 0x40},
 	},
 	{
 		inputHeader:      [2]byte{'L', 'D'},
 		inputData:        []byte{'t', 'e', 's', 't'},
 		expectedChecksum: 0x12,
-		frame:            []byte{'L', 'D', '4', '+', 't', 'e', 's', 't', '#', 0x12},
+		frame:            []byte{'L', 'D', 0x04, '+', 't', 'e', 's', 't', '#', 0x12},
 	},
 	{
 		inputHeader:      [2]byte{'L', 'D'},
 		inputData:        []byte{'d', 'u', 'p', 'c', 'i', 'a'},
 		expectedChecksum: 0x0c,
-		frame:            []byte{'L', 'D', '4', '+', 'd', 'u', 'p', 'c', 'i', 'a', '#', 0x0c},
+		frame:            []byte{'L', 'D', 0x06, '+', 'd', 'u', 'p', 'c', 'i', 'a', '#', 0x0c},
 	},
 	{
 		inputHeader:      [2]byte{'L', 'D'},
 		inputData:        []byte{'l', 'o', 'l', 'x', 'd'},
 		expectedChecksum: 0x76,
-		frame:            []byte{'L', 'D', '5', '+', 'l', 'o', 'l', 'x', 'd', '#', 0x76},
+		frame:            []byte{'L', 'D', 0x05, '+', 'l', 'o', 'l', 'x', 'd', '#', 0x76},
 	},
 	{
 		inputHeader:      [2]byte{'M', 'T'},
 		inputData:        []byte{'d', 'o', 'n', 'd', 'u'},
 		expectedChecksum: 0x60,
-		frame:            []byte{'M', 'T', '5', '+', 'd', 'o', 'n', 'd', 'u', '#', 0x60},
+		frame:            []byte{'M', 'T', 0x05, '+', 'd', 'o', 'n', 'd', 'u', '#', 0x60},
 	},
 }
 
