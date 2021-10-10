@@ -107,7 +107,7 @@ func Assemble(header [2]byte, length byte, data []byte, checksum byte) (frame Fr
 //
 // - at penultimate position: a hash sign ("#")
 //
-// - at last position: a checksum must be correct
+// - at last position: a simple CRC checksum that must be correct
 func Verify(frame Frame) bool {
 	if len(frame) < 6 {
 		return false
