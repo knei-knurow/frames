@@ -22,27 +22,32 @@ import "fmt"
 // XD7+DDDDDDD#C
 type Frame []byte
 
-// Header returns frame's header. It is always 2 bytes.
+// Header returns frame's header, i.e the first 2 bytes.
+//
+// If the frame is invalid, it may return a slice of any length.
 func (f Frame) Header() []byte {
 	return f[:2]
 }
 
-// LenData returns the length of frame's data in bytes.
+// LenData returns the length of frame's data in bytes, i.e the third byte.
+//
+// If the third byte "lies" about the frame's length, then this function will
+// return that invalid value.
 func (f Frame) LenData() int {
 	return int(f[2])
 }
 
-// Data returns frame's data part from the first byte after a plus sign ("+") up
-// to the antepenultimate (last but one - 1) byte.
+// Data returns frame's data part from the first byte after a plus sign ("+")
+// up to the antepenultimate (last but one - 1) byte.
 func (f Frame) Data() []byte {
 	headerLength := len(f.Header())
 	begin := headerLength + 2 // example: LD4+DDDD : we want to start from D (so index 4)
-	end := begin + f.LenData()
+	end := len(f) - 2
 
 	return f[begin:end]
 }
 
-// Checksum returns frame's last byte - a simple CRC checksum.
+// Checksum returns frame's simple CRC checksum, i.e the last byte.
 func (f Frame) Checksum() byte {
 	return f[len(f)-1]
 }
@@ -91,19 +96,40 @@ func Assemble(header [2]byte, length byte, data []byte, checksum byte) (frame Fr
 
 // Verify checks whether the frame is valid (i.e of correct format).
 //
-// The frame must:
+// The frame must have:
 //
-// - start with 2 byte uppercase ASCII header
+// - at 0th and 1st index: a header consisting of uppercase ASCII header or
+// numbers
 //
-// - at 3rd position (2nd index): have a length byte that is equal to the length of data
+// - at 2nd index: "length byte" that is equal to the length of data
 //
-// - at 4th position (3rd index): have a plus sign ("+")
+// - at 3rd index: a plus sign ("+")
 //
-// - at penultimate position: have a hash sign ("#")
+// - at penultimate position: a hash sign ("#")
 //
-// - its checksum must be correct
+// - at last position: a simple CRC checksum that must be correct
 func Verify(frame Frame) bool {
+	if len(frame) < 6 {
+		return false
+	}
+
+	first := frame[0]
+	valid1 := (first >= 'A' && first <= 'Z') || (first >= '0' && first <= '9')
+	if !valid1 {
+		return false
+	}
+
+	second := frame[1]
+	valid2 := (second >= 'A' && second <= 'Z') || (second >= '0' && second <= '9')
+	if !valid2 {
+		return false
+	}
+
 	if frame[2] != byte(frame.LenData()) {
+		return false
+	}
+
+	if frame.LenData() != len(frame.Data()) {
 		return false
 	}
 
@@ -122,7 +148,8 @@ func Verify(frame Frame) bool {
 // CalculateChecksum calculates the simple CRC checksum of frame.
 //
 // It takes all frame's bytes into account, except the last byte, because
-// the last byte is the checksum itself.
+// the last byte is the checksum itself. It does not check whether the frame
+// is correct.
 func CalculateChecksum(frame Frame) (crc byte) {
 	crc = frame[0]
 	for i := 1; i < len(frame)-1; i++ {
