@@ -3,6 +3,7 @@ package frames_test
 import (
 	"bytes"
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/knei-knurow/frames"
@@ -12,7 +13,6 @@ var testCases = []struct {
 	inputHeader      [2]byte
 	inputData        []byte
 	expectedChecksum byte
-	expectedLength   int
 	frame            []byte
 }{
 	{
@@ -187,4 +187,26 @@ func TestRecreate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func FuzzCreate(f *testing.F) {
+	for _, tc := range testCases {
+		f.Add(tc.inputData)
+	}
+
+	f.Fuzz(func(t *testing.T, orig []byte) {
+		if len(orig) > math.MaxUint8 {
+			return
+		}
+
+		created := frames.Create([2]byte{'L', 'D'}, orig)
+
+		if created.LenData() != len(orig) {
+			t.Errorf("got data length %d, want data %d", created.LenData(), len(orig))
+		}
+
+		if !frames.Verify(created) {
+			t.Errorf("frame recreation failed")
+		}
+	})
 }
