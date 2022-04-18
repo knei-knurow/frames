@@ -5,13 +5,11 @@ import "fmt"
 
 // Frame represents a data frame that can be e.g sent by USART.
 //
-// Frame starts with a header that is always 2 bytes.
-// Header can only contain uppercase ASCII letters.
-// Directly afer a header comes length byte which describes how long is data.
-// After the length byte comes a plus sign ("+").
-// Then comes an arbitrary-length data.
-// Data is terminated with a hash sign ("#").
-// The last byte is a simple 8-bit CRC checksum.
+// Frame starts with a header that is always 2 bytes. Header can only contain
+// uppercase ASCII letters. Directly afer a header comes length byte which
+// describes how long is data. After the length byte comes a plus sign ("+").
+// Then comes an arbitrary-length data. Data is terminated with a hash sign
+// ("#"). The last byte is a simple 8-bit CRC checksum.
 //
 // Some example frames (H = header byte, D = data byte, C = CRC byte):
 //
@@ -37,8 +35,8 @@ func (f Frame) LenData() int {
 	return int(f[2])
 }
 
-// Data returns frame's data part from the first byte after a plus sign ("+")
-// up to the antepenultimate (last but one - 1) byte.
+// Data returns frame's data part from the first byte after a plus sign ("+") up
+// to the antepenultimate (last but one - 1) byte.
 func (f Frame) Data() []byte {
 	headerLength := len(f.Header())
 	begin := headerLength + 2 // example: LD4+DDDD : we want to start from D (so index 4)
@@ -52,10 +50,9 @@ func (f Frame) Checksum() byte {
 	return f[len(f)-1]
 }
 
-// Create creates a new frame.
-// The frame starts with header and contains data.
-// Create also calculates the checksum using CalculateChecksum.
-// Data length must not overflow byte.
+// Create creates a new frame. The frame starts with header and contains data.
+// Create also calculates the checksum using CalculateChecksum. Data length must
+// not overflow byte.
 func Create(header [2]byte, data []byte) (frame Frame) {
 	frame = make(Frame, len(header)+1+1+len(data)+2)
 	copy(frame[:2], header[:])
@@ -68,10 +65,9 @@ func Create(header [2]byte, data []byte) (frame Frame) {
 	return
 }
 
-// Recreate creates a new frame from already available byte buffer.
-// It does not check whether buf represents a correct frame.
-// To check if the newly created frame is correct, use Verify function.
-// Data length must not overflow byte.
+// Recreate creates a new frame from already available byte buffer. It does not
+// check whether buf represents a correct frame. To check if the newly created
+// frame is correct, use Verify function. Data length must not overflow byte.
 func Recreate(buf []byte) (frame Frame) {
 	frame = make(Frame, len(buf))
 	copy(frame[:], buf[:])
@@ -147,9 +143,9 @@ func Verify(frame Frame) bool {
 
 // CalculateChecksum calculates the simple CRC checksum of frame.
 //
-// It takes all frame's bytes into account, except the last byte, because
-// the last byte is the checksum itself. It does not check whether the frame
-// is correct.
+// It takes all frame's bytes into account, except the last byte, because the
+// last byte is the checksum itself. It does not check whether the frame is
+// correct.
 func CalculateChecksum(frame Frame) (crc byte) {
 	crc = frame[0]
 	for i := 1; i < len(frame)-1; i++ {
@@ -163,8 +159,8 @@ func (f Frame) String() string {
 	return fmt.Sprintf("%s+%x#%x", f.Header(), f.Data(), f.Checksum())
 }
 
-// DescribeByte prints everything most common representations of a byte.
-// It prints b's binary value, decimal, hexadecimal value and ASCII.
+// DescribeByte prints everything most common representations of a byte. It
+// prints b's binary value, decimal, hexadecimal value and ASCII.
 func DescribeByte(b byte) string {
 	return fmt.Sprintf("byte(bin: %08b, dec: %3d, hex: %02x, ASCII: %+q)", b, b, b, b)
 }
