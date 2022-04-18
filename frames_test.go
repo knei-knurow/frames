@@ -3,6 +3,7 @@ package frames_test
 import (
 	"bytes"
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/knei-knurow/frames"
@@ -190,13 +191,21 @@ func TestRecreate(t *testing.T) {
 
 func FuzzCreate(f *testing.F) {
 	for _, tc := range testCases {
-		f.Add(tc.frame)
+		f.Add(tc.inputData)
 	}
 
 	f.Fuzz(func(t *testing.T, orig []byte) {
-		recreated := frames.Recreate(orig)
-		created := frames.Create([2]byte{recreated.Header()[0], recreated.Header()[1]}, recreated.Data()[2:])
-		if !bytes.Equal(orig, created) {
+		if len(orig) > math.MaxUint8 {
+			return
+		}
+
+		created := frames.Create([2]byte{'L', 'D'}, orig)
+
+		if created.LenData() != len(orig) {
+			t.Errorf("got data length %d, want data %d", created.LenData(), len(orig))
+		}
+
+		if !frames.Verify(created) {
 			t.Errorf("frame recreation failed")
 		}
 	})
