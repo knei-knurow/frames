@@ -187,3 +187,17 @@ func TestRecreate(t *testing.T) {
 		})
 	}
 }
+
+func FuzzCreate(f *testing.F) {
+	for _, tc := range testCases {
+		f.Add(tc.frame)
+	}
+
+	f.Fuzz(func(t *testing.T, orig []byte) {
+		recreated := frames.Recreate(orig)
+		created := frames.Create([2]byte{recreated.Header()[0], recreated.Header()[1]}, recreated.Data()[2:])
+		if !bytes.Equal(orig, created) {
+			t.Errorf("frame recreation failed")
+		}
+	})
+}
