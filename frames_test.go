@@ -12,7 +12,6 @@ var testCases = []struct {
 	inputHeader      [2]byte
 	inputData        []byte
 	expectedChecksum byte
-	expectedLength   int
 	frame            []byte
 }{
 	{
